@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+defaultdict = "0.19.0"
+walkdir = "2.5.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
