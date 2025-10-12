@@ -3,10 +3,22 @@ name = "file_deduplicator"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "file_deduplicator"
+path = "src/lib.rs"
+
+[[bin]]
+name = "file_deduplicator"
+path = "src/main.rs"
+
 [dependencies]
 defaultdict = "0.19.0"
+rayon = "1.11.0"
+serde = { version = "1.0.228", features = ["derive"] }
+sha2 = "0.10.9"
 walkdir = "2.5.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
 tempfile = "3.23.0"
+

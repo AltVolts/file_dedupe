@@ -1,32 +1,38 @@
-use std::collections::HashMap;
+mod plugins;
+
+// use plugins::{
+//     Plugin,
+//     PluginManager,
+//     ScanPlugin,
+//     ExtensionPlugin,
+//     FullDuplicatePlugin,
+//     PartialDuplicatePlugin,
+// };
+
+use defaultdict::DefaultHashMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
-use defaultdict::DefaultHashMap;
-
 
 pub struct DuplicateFinder {
     input_dir: PathBuf,
     output_dir: PathBuf,
 }
 
-
 fn get_file_hash(file: &PathBuf) -> u64 {
-
     12
 }
 
-pub fn split_files_by_extensions(directory: &Path)
-                             -> DefaultHashMap<String, Vec<PathBuf>>
-{
+pub fn split_files_by_extensions(directory: &Path) -> DefaultHashMap<String, Vec<PathBuf>> {
     let mut files_by_ext: DefaultHashMap<String, Vec<PathBuf>> = DefaultHashMap::new();
     let dir_iter = WalkDir::new(directory);
-    for entry in dir_iter.into_iter()
+    for entry in dir_iter
+        .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().is_file())
     {
         let path = entry.path().to_path_buf();
-        let extension =path
+        let extension = path
             .extension()
             .unwrap_or(OsStr::new("unknown"))
             .to_string_lossy()
@@ -43,11 +49,13 @@ impl DuplicateFinder {
         let output_dir = Self::validate_path(PathBuf::from(output_path))?;
 
         if Self::validate_dir_not_empty(&input_dir) {
-            Ok(DuplicateFinder{input_dir, output_dir})
+            Ok(DuplicateFinder {
+                input_dir,
+                output_dir,
+            })
         } else {
             Err(format!("{} is empty", input_path))
         }
-
     }
 
     fn validate_path(path: PathBuf) -> Result<PathBuf, String> {
@@ -61,10 +69,10 @@ impl DuplicateFinder {
     }
 
     fn validate_dir_not_empty(path: &Path) -> bool {
-        WalkDir::new(path).into_iter().any(|e| e.unwrap().file_type().is_file())
+        WalkDir::new(path)
+            .into_iter()
+            .any(|e| e.unwrap().file_type().is_file())
     }
-
-
 
     // pub fn find_full_duplicates() -> Vec<PathBuf> {
     //     ()
@@ -75,16 +83,32 @@ impl DuplicateFinder {
     // }
 }
 
+pub mod config {
+    use serde::{Deserialize, Serialize};
 
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct DuplicateConfig {
+        pub enabled_plugins: Vec<String>,
+        pub case_sensitive: bool,
+        pub min_length: usize,
+    }
 
-
-
+    impl Default for DuplicateConfig {
+        fn default() -> Self {
+            Self {
+                enabled_plugins: vec!["uppercase".to_string(), "reverse".to_string()],
+                case_sensitive: true,
+                min_length: 1,
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::{tempdir, NamedTempFile, tempfile_in};
     use std::fs;
+    use tempfile::{NamedTempFile, tempdir, tempfile_in};
 
     fn setup_test_environment() -> (tempfile::TempDir, tempfile::TempDir) {
         let input_dir = tempdir().unwrap();
@@ -113,19 +137,13 @@ mod tests {
         let input_temp = tempdir().unwrap();
         let output_temp = "./alo";
 
-        let finder = DuplicateFinder::new(
-            input_temp.path().to_str().unwrap(),
-            output_temp,
-        );
+        let finder = DuplicateFinder::new(input_temp.path().to_str().unwrap(), output_temp);
 
         assert!(finder.is_err());
 
         let input_temp = "./alo";
         let output_temp = tempdir().unwrap();
-        let finder = DuplicateFinder::new(
-            input_temp,
-            output_temp.path().to_str().unwrap(),
-        );
+        let finder = DuplicateFinder::new(input_temp, output_temp.path().to_str().unwrap());
         assert!(finder.is_err());
 
         let input_temp_file = NamedTempFile::new().unwrap();
@@ -134,10 +152,7 @@ mod tests {
         let input_temp_path = input_temp_file.path().to_str().unwrap();
         let output_temp_path = output_temp_file.path().to_str().unwrap();
 
-        let finder = DuplicateFinder::new(
-            input_temp_path,
-            output_temp_path,
-        );
+        let finder = DuplicateFinder::new(input_temp_path, output_temp_path);
         assert!(finder.is_err());
     }
 
@@ -188,8 +203,6 @@ mod tests {
         assert!(result.get("eml")[0].ends_with("file4.eml"));
     }
 
-
-
     #[test]
     fn test_find_full_duplicates() {
         ()
@@ -199,6 +212,4 @@ mod tests {
     fn test_find_partial_duplicates() {
         ()
     }
-
-
 }
