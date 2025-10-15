@@ -1,4 +1,4 @@
-use file_deduplicator::DuplicateFinder;
+use file_deduplicator::{DuplicateFinder, file_generators};
 
 use std::error::Error;
 use std::{fs, env};
@@ -36,6 +36,7 @@ fn main() {
 
 
 fn run_program() -> Result<(), Box<dyn std::error::Error>> {
+    // file_generators::generate_test_files()?;
     let config_data = read_config()?;
     println!("Config file loaded successfully");
 
@@ -55,10 +56,10 @@ fn run_program() -> Result<(), Box<dyn std::error::Error>> {
 
 
     let duplicator = DuplicateFinder::new(
-        "./test_files",
+        input_dir.to_str().unwrap(),
         output_dir.to_str().unwrap()
     )?;
-    duplicator.move_full_duplicates()?;
+    duplicator.copy_full_duplicates()?;
 
     Ok(())
 }

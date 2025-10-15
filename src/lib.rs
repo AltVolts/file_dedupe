@@ -1,5 +1,5 @@
 mod plugins;
-
+pub mod file_generators;
 // use plugins::{
 //     Plugin,
 //     PluginManager,
@@ -114,7 +114,15 @@ impl DuplicateFinder {
         result
     }
 
-    pub fn move_full_duplicates(&self) -> Result<()> {
+    // pub fn find_piecewise_duplicates(&self) -> Vec<Vec<PathBuf>> {
+    //
+    // }
+    // pub fn find_partial_duplicates_(&self) -> Vec<Vec<PathBuf>> {
+    //
+    // }
+
+
+    pub fn copy_full_duplicates(&self) -> Result<()> {
         let duplicate_files = self.find_full_duplicates();
         for (idx, files) in duplicate_files.iter().enumerate() {
             let new_path_group = self.output_dir.join(format!("{idx}"));
