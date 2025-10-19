@@ -1,7 +1,11 @@
+use std::fs;
 use std::path::Path;
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
 
 mod full_duplicates;
 mod partial_duplicates;
+mod input_plugins;
 
 #[derive(Debug)]
 struct DuplicateGroup {
@@ -9,13 +13,13 @@ struct DuplicateGroup {
     hash_list: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum IsUnique {
     Unique,
-    Duplicate(DuplicateGroup),
+    Duplicate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct ResultFileInfo {
     path: String,
     name: String,
@@ -25,10 +29,55 @@ struct ResultFileInfo {
     plugin_type: String,
 }
 
+trait IntoResultFileInfo {
+    fn into_result_file_info(
+        self,
+        hash: String,
+        is_unique: IsUnique,
+        plugin_type: String,
+    ) -> ResultFileInfo;
+}
+
+impl<P> IntoResultFileInfo for P
+where
+    P: AsRef<Path>,
+{
+    fn into_result_file_info(
+        self,
+        hash: String,
+        is_unique: IsUnique,
+        plugin_type: String,
+    ) -> ResultFileInfo {
+        let path_ref = self.as_ref();
+
+        let size = fs::metadata(path_ref).map(|m| m.len()).unwrap_or(0);
+
+        let name = path_ref
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "unknown".to_string());
+
+        let path = path_ref
+            .to_str()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "invalid_path".to_string());
+
+        ResultFileInfo {
+            path,
+            name,
+            size,
+            hash,
+            is_unique,
+            plugin_type,
+        }
+    }
+}
+
 #[derive(Debug)]
 struct PluginResult {
-    unique_files: Vec<Result<ResultFileInfo, String>>,
-    duplicate_files: Vec<Vec<Result<ResultFileInfo, String>>>,
+    unique_files: Vec<ResultFileInfo>,
+    duplicate_files: Vec<Vec<ResultFileInfo>>,
 }
 
 trait IDeduplicatorPlugin {
@@ -49,4 +98,30 @@ trait IPluginPipeline {
     fn clear_list_plugins(&mut self);
 
     fn execute(&self, file_list: &Vec<&str>) -> Result<PluginResult, Box<dyn std::error::Error>>;
+}
+
+
+pub fn compute_md5(data: &[u8]) -> String {
+    use md5::compute;
+    format!("{:x}", compute(data))
+}
+
+// pub fn compute_sha256(data: &[u8]) -> String {
+//     let mut context = Context::new(&SHA256);
+//     context.update(data);
+//     let digest = context.finish();
+//     data_to_hex(digest.as_ref())
+// }
+
+pub fn compute_simple_hash(data: &[u8]) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    data.hash(&mut hasher);
+    hasher.finish()
+}
+
+// Helper function to convert bytes to hex string
+fn data_to_hex(data: &[u8]) -> String {
+    data.iter()
+        .map(|b| format!("{:02x}", b))
+        .collect()
 }
