@@ -1,6 +1,5 @@
-use std::fs;
 use rand::Rng;
-
+use std::fs;
 
 fn generate_random_string(length: usize) -> String {
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\

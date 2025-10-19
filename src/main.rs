@@ -1,19 +1,16 @@
 use file_deduplicator::{DuplicateFinder, file_generators};
 
-use std::error::Error;
-use std::{fs, env};
-use std::path::{Path, PathBuf};
 use serde::Deserialize;
-
+use std::error::Error;
+use std::path::{Path, PathBuf};
+use std::{env, fs};
 
 const CONFIG_FILE: &str = "conf.json";
-
 
 #[derive(Debug, Deserialize)]
 struct Config {
     target_dir: String,
 }
-
 
 fn read_config() -> Result<Config, Box<dyn Error>> {
     let config_path = Path::new(CONFIG_FILE);
@@ -34,7 +31,6 @@ fn main() {
     run_program().expect("TODO: panic message");
 }
 
-
 fn run_program() -> Result<(), Box<dyn std::error::Error>> {
     // file_generators::generate_test_files()?;
     let config_data = read_config()?;
@@ -54,11 +50,8 @@ fn run_program() -> Result<(), Box<dyn std::error::Error>> {
     let output_dir: PathBuf = env::current_dir()?.join("output");
     fs::create_dir_all(&output_dir)?;
 
-
-    let duplicator = DuplicateFinder::new(
-        input_dir.to_str().unwrap(),
-        output_dir.to_str().unwrap()
-    )?;
+    let duplicator =
+        DuplicateFinder::new(input_dir.to_str().unwrap(), output_dir.to_str().unwrap())?;
     duplicator.copy_full_duplicates()?;
 
     Ok(())

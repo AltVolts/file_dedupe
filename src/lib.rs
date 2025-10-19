@@ -1,5 +1,9 @@
-mod plugins;
+mod benchmark;
+mod comparison;
 pub mod file_generators;
+mod methods;
+mod plugins;
+
 // use plugins::{
 //     Plugin,
 //     PluginManager,
@@ -120,7 +124,6 @@ impl DuplicateFinder {
     // pub fn find_partial_duplicates_(&self) -> Vec<Vec<PathBuf>> {
     //
     // }
-
 
     pub fn copy_full_duplicates(&self) -> Result<()> {
         let duplicate_files = self.find_full_duplicates();
