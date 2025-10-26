@@ -80,6 +80,7 @@ struct PluginResult {
     duplicate_files: Vec<Vec<ResultFileInfo>>,
 }
 
+// Логика: у каждого плагина есть способ как представлять файл в виде хеша и как сравнивать эти представления чтобы получить результат формата PluginResult 
 trait IDeduplicatorPlugin {
     fn name(&self) -> &str;
     fn exec<P: AsRef<Path>>(
