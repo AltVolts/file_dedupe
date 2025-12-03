@@ -1,3 +1,9 @@
 {
-  "target_dir": "/mnt/new_disk/Dev/Rust/file_deduplicator/test_data"
+  "root_paths": ["/mnt/new_disk/Dev/Rust/file_deduplicator"],
+  "min_file_size": null,
+  "max_file_size": null,
+  "follow_symlinks": false,
+  "exclude_patterns": [],
+  "max_depth": 10,
+  "skip_hidden": true
 }

@@ -1,21 +1,8 @@
 use std::path::{Path, PathBuf};
 use walkdir::{WalkDir, DirEntry};
 use rayon::prelude::*;
-use glob::Pattern;
-
-
+pub use crate::config::ScanConfig;
 use crate::models::{FileMetadata, ProgressUpdate, ScanStats};
-
-
-pub struct ScanConfig {
-    pub root_paths: Vec<PathBuf>,
-    pub min_file_size: Option<u64>,
-    pub max_file_size: Option<u64>,
-    pub follow_symlinks: bool,
-    pub exclude_patterns: Vec<Pattern>,
-    pub max_depth: Option<usize>,
-    pub skip_hidden: bool,
-}
 
 pub struct Scanner {
     config: ScanConfig,
