@@ -6,9 +6,9 @@ use serde::{Serialize, Deserialize};
 pub struct FileMetadata {
     pub path: PathBuf,
     pub size: u64,
-    pub modified: SystemTime,
     pub hash: Option<FileHash>,
-    pub inode: Option<u64>,
+    pub modified: Option<SystemTime>,
+    pub created: Option<SystemTime>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -31,4 +31,44 @@ pub struct DuplicateGroup {
     pub files: Vec<FileMetadata>,
     pub total_size: u64,
     pub hash: FileHash,
+}
+
+#[derive(Debug, Clone)]
+pub struct ScanStats {
+    pub files_scanned: u64,
+    pub total_size: u64,
+    pub start_time: std::time::Instant,
+}
+
+impl ScanStats {
+    pub fn new() -> Self {
+        Self {
+            files_scanned: 0,
+            total_size: 0,
+            start_time: std::time::Instant::now(),
+        }
+    }
+
+    pub fn elapsed(&self) -> std::time::Duration {
+        self.start_time.elapsed()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum ProgressUpdate {
+    Scanning {
+        current_path: PathBuf,
+        files_scanned: u64,
+    },
+    Processing {
+        current_file: PathBuf,
+        files_processed: u64,
+        total_files: u64,
+    },
+    Hashing {
+        current_file: PathBuf,
+        bytes_hashed: u64,
+        total_bytes: u64,
+    },
+    Finished(ScanStats),
 }

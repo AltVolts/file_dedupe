@@ -24,15 +24,6 @@ impl PieceWisePlugin {
 }
 
 
-fn compute_sha(bytes: &[u8]) -> [u8; 32] {
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    let hash_result = hasher.finalize();
-    let mut hash_array = [0u8; 32];
-    hash_array.copy_from_slice(&hash_result);
-    hash_array
-}
-
 
 fn compute_md5(bytes: &[u8]) -> String {
     format!("{:x}", md5::compute(bytes))
@@ -44,7 +35,7 @@ fn read_and_hash_chunks(
     start_chunk: usize,
     num_chunks: usize,
     total_chunks: usize,
-) -> io::Result<Vec<[u8; 32]>> {
+) -> io::Result<Vec<String>> {
     let mut hashes = Vec::with_capacity(num_chunks);
     let mut buffer = vec![0u8; CHUNK_SIZE];
     for chunk_index in start_chunk..(start_chunk + num_chunks).min(total_chunks) {
@@ -53,7 +44,7 @@ fn read_and_hash_chunks(
 
         let bytes_read = file.read(&mut buffer)?;
         if bytes_read > 0 {
-            let hash_result = compute_sha(&buffer);
+            let hash_result = compute_md5(&buffer);
             hashes.push(hash_result);
         }
     }
@@ -126,7 +117,7 @@ fn find_similar_files(input_dir: &Path, threshold: f64) -> Vec<(PathBuf, Vec<(Pa
 
     let mut similar_files_list = Vec::new();
 
-    for (idx, file) in files.iter().enumerate() {
+    for (idx, file) in files {
         let similarities = result_matrix.get(idx).unwrap();
         let mut similar_files = Vec::new();
 
@@ -155,6 +146,16 @@ fn find_similar_files(input_dir: &Path, threshold: f64) -> Vec<(PathBuf, Vec<(Pa
 }
 
 
+#[cfg(test)]
+mod tests {
+    use crate::plugins::partial_duplicates::piecewise_plugin::find_similar_files;
+
+    #[test]
+    fn smoke_test() {
+        let target_dir = "/mnt/new_disk/Dev/Rust/file_deduplicator/test_data";
+        find_similar_files(target_dir.as_ref(), 0.1);
+    }
+}
 
 
 //

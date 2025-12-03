@@ -1,3 +1,3 @@
-mod scanner;
-mod models;
+pub mod scanner;
+pub mod models;
 pub mod config;
